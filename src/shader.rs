@@ -1,4 +1,6 @@
-use std::{error::Error, io::Read};
+extern crate nalgebra_glm as glm;
+
+use std::{error::Error, ffi::CStr, io::Read};
 
 pub struct Shader {
     pub id: u32,
@@ -9,7 +11,6 @@ impl Shader {
         let vertex_shader = Self::create_shader(shaders[0], gl::VERTEX_SHADER)?;
         let fragment_shader = Self::create_shader(shaders[1], gl::FRAGMENT_SHADER)?;
         let id = Self::create_program(vertex_shader, fragment_shader);
-
         Ok(Shader { id })
     }
 
@@ -19,22 +20,30 @@ impl Shader {
         }
     }
 
-    pub fn set_bool(self: &Self, name: &str, value: bool) {
+    pub fn set_bool(self: &Self, name: &CStr, value: bool) {
         self.set_int(name, value as i32)
     }
 
-    pub fn set_int(self: &Self, name: &str, value: i32) {
+    pub fn set_int(self: &Self, name: &CStr, value: i32) {
         unsafe {
-            gl::Uniform1i(
-                gl::GetUniformLocation(self.id, name.as_ptr().cast()),
-                value as i32,
-            );
+            gl::Uniform1i(gl::GetUniformLocation(self.id, name.as_ptr()), value);
         }
     }
 
     pub fn set_float(self: &Self, name: &str, value: f32) {
         unsafe {
             gl::Uniform1f(gl::GetUniformLocation(self.id, name.as_ptr().cast()), value);
+        }
+    }
+
+    pub fn set_mat4(self: &Self, name: &CStr, matrix: glm::Mat4) {
+        unsafe {
+            gl::UniformMatrix4fv(
+                gl::GetUniformLocation(self.id, name.as_ptr()),
+                1,
+                gl::FALSE,
+                matrix.as_ptr(),
+            );
         }
     }
 
