@@ -7,6 +7,7 @@ use std::ffi::CString;
 use std::time::Instant;
 
 use glfw::{Action, Context, Key, WindowHint};
+use wave_motion_engine::camera::{Camera, MovementType};
 use wave_motion_engine::shader::Shader;
 use wave_motion_engine::texture::Texture;
 
@@ -64,6 +65,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let view_uniform = CString::new("view".to_string()).unwrap();
     let projection_uniform = CString::new("projection".to_string()).unwrap();
 
+    let mut camera: Camera = Camera::new(glm::Vec3::new(0.0, 0.0, -3.0));
+
     while !window.should_close() {
         let now: Instant = Instant::now();
         let elapsed_time: f32 = now.duration_since(last_draw_time).as_secs_f32();
@@ -72,9 +75,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             frame_time += elapsed_time;
             last_draw_time = now;
         }
+
         // process input
         for (_, event) in glfw::flush_messages(&events) {
-            handle_window_events(&mut window, event);
+            handle_window_events(&mut window, &mut camera, frame_time, event);
         }
 
         // render
@@ -83,7 +87,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
 
-        let view: glm::Mat4 = glm::translate(&glm::Mat4::identity(), &glm::vec3(0.0, 0.0, -3.0));
+        let view: glm::Mat4 = camera.get_view_matrix();
+        // let view: glm::Mat4 = glm::translate(&glm::Mat4::identity(), &glm::vec3(0.0, 0.0, -3.0));
         let projection: glm::Mat4 = glm::perspective(aspect, fov.to_radians(), 0.1, 100.0);
 
         shader.set_mat4(&view_uniform, view);
@@ -111,10 +116,27 @@ fn frame_buffer_size_callback(_window: &mut glfw::Window, width: i32, height: i3
     }
 }
 
-fn handle_window_events(window: &mut glfw::Window, event: glfw::WindowEvent) {
+fn handle_window_events(
+    window: &mut glfw::Window,
+    camera: &mut Camera,
+    delta: f32,
+    event: glfw::WindowEvent,
+) {
     match event {
         glfw::WindowEvent::Key(Key::Escape, _, Action::Press, _) => {
             window.set_should_close(true);
+        }
+        glfw::WindowEvent::Key(Key::Up, _, Action::Press, _) => {
+            camera.move_camera(MovementType::FORWARD, delta);
+        }
+        glfw::WindowEvent::Key(Key::Down, _, Action::Press, _) => {
+            camera.move_camera(MovementType::BACKWARD, delta);
+        }
+        glfw::WindowEvent::Key(Key::Left, _, Action::Press, _) => {
+            camera.move_camera(MovementType::LEFT, delta);
+        }
+        glfw::WindowEvent::Key(Key::Right, _, Action::Press, _) => {
+            camera.move_camera(MovementType::RIGHT, delta);
         }
         _ => {}
     }
