@@ -18,6 +18,7 @@ pub struct Camera {
     pub movement_speed: f32,
     pub mouse_sensitivity: f32,
     pub zoom: f32,
+    pub invert_y: bool,
 }
 
 impl Camera {
@@ -37,10 +38,11 @@ impl Camera {
             movement_speed: camera.movement_speed,
             mouse_sensitivity: camera.movement_speed,
             zoom: camera.zoom,
+            invert_y: camera.invert_y,
         }
     }
 
-    pub fn move_camera(self: &mut Self, movement_type: MovementType, delta: f32) {
+    pub fn dolly_camera(self: &mut Self, movement_type: MovementType, delta: f32) {
         let velocity: f32 = self.movement_speed * delta;
         match movement_type {
             MovementType::FORWARD => {
@@ -49,13 +51,47 @@ impl Camera {
             MovementType::BACKWARD => {
                 self.position -= self.front * velocity;
             }
+            _ => ()
+        }
+    }
+
+    pub fn pan_camera(self: &mut Self, movement_type: MovementType, delta: f32) {
+        let velocity: f32 = self.movement_speed * delta;
+        match movement_type {
             MovementType::LEFT => {
                 self.position -= self.right * velocity;
             }
             MovementType::RIGHT => {
                 self.position += self.right * velocity;
             }
+            _ => ()
         }
+    }
+
+    pub fn fly_rotate_camera(self: &mut Self, x_offset: f32, y_offset: f32, delta: f32) {
+       let new_x: f32 = self.mouse_sensitivity * x_offset * delta;
+       let new_y: f32 = self.mouse_sensitivity * y_offset * delta;
+
+       if self.invert_y {
+           self.pitch -= new_y;
+       } else {
+           self.pitch += new_y;
+       }
+       self.yaw += new_x;
+
+       if self.pitch > 89.0 {
+           self.pitch = 89.0;
+       }
+       if self.pitch < -89.0 {
+           self.pitch = -89.0;
+       }
+       recalculate_vectors(self);
+    }
+
+    pub fn fps_rotate_camera(self: &mut Self, x_offset: f32, y_offset: f32, delta: f32) {
+        let current_y_pos = self.position.y;
+        self.fly_rotate_camera(x_offset, y_offset, delta);
+        self.position.y = current_y_pos;
     }
 
     pub fn get_view_matrix(self: &Self) -> glm::Mat4 {
@@ -86,6 +122,7 @@ impl Default for Camera {
             movement_speed: 2.5,
             mouse_sensitivity: 0.1,
             zoom: 45.0,
+            invert_y: true,
         }
     }
 }

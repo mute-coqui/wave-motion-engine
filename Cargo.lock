@@ -475,6 +475,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "lighting"
+version = "0.1.0"
+dependencies = [
+ "gl",
+ "glfw",
+ "nalgebra-glm",
+ "wme-core",
+]
+
+[[package]]
 name = "lock_api"
 version = "0.4.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"

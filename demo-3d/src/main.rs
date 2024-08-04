@@ -10,12 +10,18 @@ use wme_core::camera::{Camera, MovementType};
 use wme_core::shader::Shader;
 use wme_core::texture::Texture;
 
+struct MouseData {
+    first_mouse: bool,
+    last_x: f32,
+    last_y: f32,
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let mut glfw = glfw::init(glfw::fail_on_errors).unwrap();
     glfw.window_hint(WindowHint::ContextVersion(3, 3));
     glfw.window_hint(WindowHint::OpenGlProfile(glfw::OpenGlProfileHint::Core));
 
-    let (mut window, _events) = glfw
+    let (mut window, events) = glfw
         .create_window(800, 600, "Wave Motion Engine", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
@@ -29,6 +35,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     window.set_framebuffer_size_callback(frame_buffer_size_callback);
+    window.set_cursor_pos_polling(true);
+    window.set_scroll_polling(true);
 
     let basic_cube: BasicCube = BasicCube::new("../resources/textures/container.jpg");
 
@@ -67,6 +75,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut delta_time: f32;
     let mut previous_time: f32 = 0.0;
 
+    let mut mouse_data: MouseData = MouseData {
+        first_mouse: true,
+        last_x: (800 / 2) as f32,
+        last_y: (600 / 2) as f32,
+    };
+
     while !window.should_close() {
         let current_time: f32 = glfw.get_time() as f32;
         delta_time = current_time - previous_time;
@@ -74,9 +88,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         // process input
         process_inputs(&mut window, &mut camera, delta_time);
-        // for (_, event) in glfw::flush_messages(&events) {
-        //     handle_window_events(&mut window, &mut camera, delta_time, event);
-        // }
+        for (_, event) in glfw::flush_messages(&events) {
+            process_mouse(event, &mut camera, &mut mouse_data, delta_time);
+        }
 
         // render
         unsafe {
@@ -122,16 +136,38 @@ fn process_inputs(
         window.set_should_close(true);
     }
     if window.get_key(Key::Up) == Action::Press {
-        camera.move_camera(MovementType::FORWARD, delta);
+        camera.dolly_camera(MovementType::FORWARD, delta);
     }
     if window.get_key(Key::Down) == Action::Press {
-        camera.move_camera(MovementType::BACKWARD, delta);
+        camera.dolly_camera(MovementType::BACKWARD, delta);
     }
     if window.get_key(Key::Left) == Action::Press {
-        camera.move_camera(MovementType::LEFT, delta);
+        camera.pan_camera(MovementType::LEFT, delta);
     }
     if window.get_key(Key::Right) == Action::Press {
-        camera.move_camera(MovementType::RIGHT, delta);
+        camera.pan_camera(MovementType::RIGHT, delta);
+    }
+}
+
+fn process_mouse(event: glfw::WindowEvent, camera: &mut Camera, mouse_data: &mut MouseData, delta: f32) {
+    match event {
+        glfw::WindowEvent::CursorPos(xpos, ypos) => {
+            let (xpos, ypos) = (xpos as f32, ypos as f32);
+            if mouse_data.first_mouse {
+                mouse_data.first_mouse = false;
+                mouse_data.last_x = xpos;
+                mouse_data.last_y = ypos;
+            }
+
+            let x_offset: f32 = xpos - mouse_data.last_x;
+            let y_offset: f32 = ypos - mouse_data.last_y;
+
+            mouse_data.last_x = xpos;
+            mouse_data.last_y = ypos;
+
+            camera.fly_rotate_camera(x_offset, y_offset, delta);
+        }
+        _ => ()
     }
 }
 

@@ -1,5 +1,6 @@
 [workspace]
 members = [
     "wme-core",
-    "demo-3d"
+    "demo-3d",
+    "lighting"
 ]
