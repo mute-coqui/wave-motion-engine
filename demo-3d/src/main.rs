@@ -4,19 +4,18 @@ extern crate nalgebra_glm as glm;
 
 use std::error::Error;
 use std::ffi::CString;
-use std::time::Instant;
 
 use glfw::{Action, Context, Key, WindowHint};
-use wave_motion_engine::camera::{Camera, MovementType};
-use wave_motion_engine::shader::Shader;
-use wave_motion_engine::texture::Texture;
+use wme_core::camera::{Camera, MovementType};
+use wme_core::shader::Shader;
+use wme_core::texture::Texture;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut glfw = glfw::init(glfw::fail_on_errors).unwrap();
     glfw.window_hint(WindowHint::ContextVersion(3, 3));
     glfw.window_hint(WindowHint::OpenGlProfile(glfw::OpenGlProfileHint::Core));
 
-    let (mut window, events) = glfw
+    let (mut window, _events) = glfw
         .create_window(800, 600, "Wave Motion Engine", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
@@ -31,11 +30,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     window.set_framebuffer_size_callback(frame_buffer_size_callback);
 
-    let basic_cube: BasicCube = BasicCube::new("./resources/textures/container.jpg");
+    let basic_cube: BasicCube = BasicCube::new("../resources/textures/container.jpg");
 
     let shaders: [&str; 2] = [
-        "./resources/shaders/basic.vert",
-        "./resources/shaders/basic.frag",
+        "../resources/shaders/basic.vert",
+        "../resources/shaders/basic.frag",
     ];
 
     let shader = Shader::new(&shaders)?;
@@ -58,8 +57,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let fov: f32 = 45.0;
     let aspect: f32 = (800 / 600) as f32;
-    let mut frame_time: f32 = 0.0;
-    let mut last_draw_time: Instant = Instant::now();
 
     let model_uniform = CString::new("model".to_string()).unwrap();
     let view_uniform = CString::new("view".to_string()).unwrap();
@@ -67,19 +64,19 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut camera: Camera = Camera::new(glm::Vec3::new(0.0, 0.0, -3.0));
 
-    while !window.should_close() {
-        let now: Instant = Instant::now();
-        let elapsed_time: f32 = now.duration_since(last_draw_time).as_secs_f32();
+    let mut delta_time: f32;
+    let mut previous_time: f32 = 0.0;
 
-        if elapsed_time > 0.02 {
-            frame_time += elapsed_time;
-            last_draw_time = now;
-        }
+    while !window.should_close() {
+        let current_time: f32 = glfw.get_time() as f32;
+        delta_time = current_time - previous_time;
+        previous_time = current_time;
 
         // process input
-        for (_, event) in glfw::flush_messages(&events) {
-            handle_window_events(&mut window, &mut camera, frame_time, event);
-        }
+        process_inputs(&mut window, &mut camera, delta_time);
+        // for (_, event) in glfw::flush_messages(&events) {
+        //     handle_window_events(&mut window, &mut camera, delta_time, event);
+        // }
 
         // render
         unsafe {
@@ -96,7 +93,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         for (idx, pos) in cube_positions.iter().enumerate() {
             let mut model: glm::Mat4 = glm::translate(&glm::Mat4::identity(), pos);
-            let angle = (idx + 1) as f32 / 3.0 * frame_time;
+            let angle = 20.0 * idx as f32;
             model = glm::rotate(&model, angle, &glm::vec3(1.0, 0.3, 0.5));
             shader.set_mat4(&model_uniform, model);
             basic_cube.draw();
@@ -116,29 +113,25 @@ fn frame_buffer_size_callback(_window: &mut glfw::Window, width: i32, height: i3
     }
 }
 
-fn handle_window_events(
+fn process_inputs( 
     window: &mut glfw::Window,
     camera: &mut Camera,
     delta: f32,
-    event: glfw::WindowEvent,
 ) {
-    match event {
-        glfw::WindowEvent::Key(Key::Escape, _, Action::Press, _) => {
-            window.set_should_close(true);
-        }
-        glfw::WindowEvent::Key(Key::Up, _, Action::Press, _) => {
-            camera.move_camera(MovementType::FORWARD, delta);
-        }
-        glfw::WindowEvent::Key(Key::Down, _, Action::Press, _) => {
-            camera.move_camera(MovementType::BACKWARD, delta);
-        }
-        glfw::WindowEvent::Key(Key::Left, _, Action::Press, _) => {
-            camera.move_camera(MovementType::LEFT, delta);
-        }
-        glfw::WindowEvent::Key(Key::Right, _, Action::Press, _) => {
-            camera.move_camera(MovementType::RIGHT, delta);
-        }
-        _ => {}
+    if window.get_key(Key::Escape) == Action::Press {
+        window.set_should_close(true);
+    }
+    if window.get_key(Key::Up) == Action::Press {
+        camera.move_camera(MovementType::FORWARD, delta);
+    }
+    if window.get_key(Key::Down) == Action::Press {
+        camera.move_camera(MovementType::BACKWARD, delta);
+    }
+    if window.get_key(Key::Left) == Action::Press {
+        camera.move_camera(MovementType::LEFT, delta);
+    }
+    if window.get_key(Key::Right) == Action::Press {
+        camera.move_camera(MovementType::RIGHT, delta);
     }
 }
 

@@ -1,13 +1,5 @@
-[package]
-name = "wave-motion-engine"
-version = "0.1.0"
-edition = "2021"
-
-[lib]
-path="src/lib.rs"
-
-[dependencies]
-glfw = "0.58.0"
-gl = "0.14.0"
-nalgebra-glm = "0.19.0"
-image = "0.25.2"
+[workspace]
+members = [
+    "wme-core",
+    "demo-3d"
+]
