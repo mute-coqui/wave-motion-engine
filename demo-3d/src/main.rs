@@ -127,11 +127,7 @@ fn frame_buffer_size_callback(_window: &mut glfw::Window, width: i32, height: i3
     }
 }
 
-fn process_inputs( 
-    window: &mut glfw::Window,
-    camera: &mut Camera,
-    delta: f32,
-) {
+fn process_inputs(window: &mut glfw::Window, camera: &mut Camera, delta: f32) {
     if window.get_key(Key::Escape) == Action::Press {
         window.set_should_close(true);
     }
@@ -149,7 +145,12 @@ fn process_inputs(
     }
 }
 
-fn process_mouse(event: glfw::WindowEvent, camera: &mut Camera, mouse_data: &mut MouseData, delta: f32) {
+fn process_mouse(
+    event: glfw::WindowEvent,
+    camera: &mut Camera,
+    mouse_data: &mut MouseData,
+    delta: f32,
+) {
     match event {
         glfw::WindowEvent::CursorPos(xpos, ypos) => {
             let (xpos, ypos) = (xpos as f32, ypos as f32);
@@ -167,7 +168,7 @@ fn process_mouse(event: glfw::WindowEvent, camera: &mut Camera, mouse_data: &mut
 
             camera.fly_rotate_camera(x_offset, y_offset, delta);
         }
-        _ => ()
+        _ => (),
     }
 }
 

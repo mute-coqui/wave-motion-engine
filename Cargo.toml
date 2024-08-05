@@ -2,5 +2,6 @@
 members = [
     "wme-core",
     "demo-3d",
-    "lighting"
+    "lighting",
+    "demo-russimp"
 ]

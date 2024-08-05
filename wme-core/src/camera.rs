@@ -19,6 +19,8 @@ pub struct Camera {
     pub mouse_sensitivity: f32,
     pub zoom: f32,
     pub invert_y: bool,
+    pub fov: f32, 
+    pub aspect: f32, 
 }
 
 impl Camera {
@@ -39,6 +41,8 @@ impl Camera {
             mouse_sensitivity: camera.movement_speed,
             zoom: camera.zoom,
             invert_y: camera.invert_y,
+            fov: camera.fov,
+            aspect: camera.aspect,
         }
     }
 
@@ -123,6 +127,8 @@ impl Default for Camera {
             mouse_sensitivity: 0.1,
             zoom: 45.0,
             invert_y: true,
+            fov: 45.0,
+            aspect: (800 / 600) as f32,
         }
     }
 }
