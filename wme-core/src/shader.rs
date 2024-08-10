@@ -80,7 +80,11 @@ impl Shader {
                 let mut v: Vec<u8> = Vec::with_capacity(1024);
                 gl::GetShaderInfoLog(shader_id, 1024, &mut log_len, v.as_mut_ptr().cast());
                 v.set_len(log_len.try_into().unwrap());
-                panic!("Shader compile error: {}\nError: {}", path, String::from_utf8_lossy(&v));
+                panic!(
+                    "Shader compile error: {}\nError: {}",
+                    path,
+                    String::from_utf8_lossy(&v)
+                );
             }
         }
 

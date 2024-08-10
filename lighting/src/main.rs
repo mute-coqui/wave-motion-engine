@@ -11,7 +11,6 @@ use lighting::mouse::Mouse;
 use wme_core::camera::{Camera, MovementType};
 use wme_core::shader::Shader;
 
-
 fn main() -> Result<(), Box<dyn Error>> {
     let mut glfw = glfw::init(glfw::fail_on_errors).unwrap();
     glfw.window_hint(WindowHint::ContextVersion(3, 3));
@@ -21,7 +20,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     const SCR_HEIGHT: u32 = 900;
 
     let (mut window, events) = glfw
-        .create_window(SCR_WIDTH, SCR_HEIGHT, "Wave Motion Engine", glfw::WindowMode::Windowed)
+        .create_window(
+            SCR_WIDTH,
+            SCR_HEIGHT,
+            "Wave Motion Engine",
+            glfw::WindowMode::Windowed,
+        )
         .expect("Failed to create GLFW window");
 
     window.set_key_polling(true);
@@ -65,10 +69,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut delta_time: f32;
     let mut previous_time: f32 = 0.0;
 
-    let mut mouse_data: Mouse = Mouse::new(
-        (SCR_WIDTH / 2) as f32,
-        (SCR_HEIGHT / 2) as f32,
-    );
+    let mut mouse_data: Mouse = Mouse::new((SCR_WIDTH / 2) as f32, (SCR_HEIGHT / 2) as f32);
 
     let cube: Mesh = Mesh::new(glm::Vec3::zeros());
 
@@ -97,7 +98,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         light_shader.set_vec3(&u_view_pos, camera.position);
 
         let view: glm::Mat4 = camera.get_view_matrix();
-        let projection: glm::Mat4 = glm::perspective(camera.aspect, camera.fov.to_radians(), 0.1, 100.0);
+        let projection: glm::Mat4 =
+            glm::perspective(camera.aspect, camera.fov.to_radians(), 0.1, 100.0);
 
         light_shader.set_mat4(&projection_uniform, projection);
         light_shader.set_mat4(&view_uniform, view);

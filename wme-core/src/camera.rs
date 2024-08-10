@@ -19,8 +19,8 @@ pub struct Camera {
     pub mouse_sensitivity: f32,
     pub zoom: f32,
     pub invert_y: bool,
-    pub fov: f32, 
-    pub aspect: f32, 
+    pub fov: f32,
+    pub aspect: f32,
 }
 
 impl Camera {
@@ -55,7 +55,7 @@ impl Camera {
             MovementType::BACKWARD => {
                 self.position -= self.front * velocity;
             }
-            _ => ()
+            _ => (),
         }
     }
 
@@ -68,28 +68,28 @@ impl Camera {
             MovementType::RIGHT => {
                 self.position += self.right * velocity;
             }
-            _ => ()
+            _ => (),
         }
     }
 
     pub fn fly_rotate_camera(self: &mut Self, x_offset: f32, y_offset: f32, delta: f32) {
-       let new_x: f32 = self.mouse_sensitivity * x_offset * delta;
-       let new_y: f32 = self.mouse_sensitivity * y_offset * delta;
+        let new_x: f32 = self.mouse_sensitivity * x_offset * delta;
+        let new_y: f32 = self.mouse_sensitivity * y_offset * delta;
 
-       if self.invert_y {
-           self.pitch -= new_y;
-       } else {
-           self.pitch += new_y;
-       }
-       self.yaw += new_x;
+        if self.invert_y {
+            self.pitch -= new_y;
+        } else {
+            self.pitch += new_y;
+        }
+        self.yaw += new_x;
 
-       if self.pitch > 89.0 {
-           self.pitch = 89.0;
-       }
-       if self.pitch < -89.0 {
-           self.pitch = -89.0;
-       }
-       recalculate_vectors(self);
+        if self.pitch > 89.0 {
+            self.pitch = 89.0;
+        }
+        if self.pitch < -89.0 {
+            self.pitch = -89.0;
+        }
+        recalculate_vectors(self);
     }
 
     pub fn fps_rotate_camera(self: &mut Self, x_offset: f32, y_offset: f32, delta: f32) {
