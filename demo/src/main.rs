@@ -5,7 +5,8 @@ extern crate nalgebra_glm as glm;
 use std::error::Error;
 use std::ffi::CString;
 
-use demo_russimp::mesh::Mesh;
+use demo_russimp::light_cube::LightCube;
+use demo_russimp::model::Model;
 use glfw::{Action, Context, Key, WindowHint};
 use wme_core::camera::{Camera, MovementType};
 use wme_core::mouse::Mouse;
@@ -16,8 +17,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     glfw.window_hint(WindowHint::ContextVersion(3, 3));
     glfw.window_hint(WindowHint::OpenGlProfile(glfw::OpenGlProfileHint::Core));
 
-    const SCR_WIDTH: u32 = 1500;
-    const SCR_HEIGHT: u32 = 900;
+    const SCR_WIDTH: u32 = 1280;
+    const SCR_HEIGHT: u32 = 720;
 
     let (mut window, events) = glfw
         .create_window(
@@ -46,33 +47,28 @@ fn main() -> Result<(), Box<dyn Error>> {
         "../resources/shaders/model-loader-fs.glsl",
     ];
 
-    let cube_shader: Shader = Shader::new(&cube_shaders)?;
+    let cube_model: Model =
+        Model::new(&"../resources/meshes/cube.obj", &cube_shaders);
 
-    let load_options = tobj::LoadOptions {
-        triangulate: true,
-        single_index: true,
-        ..Default::default()
-    };
-    let (models, materials) = tobj::load_obj(&"../resources/meshes/cube.obj", &load_options)
-        .expect("Failed to OBJ load file");
+    let light_shaders: [&str; 2] = [
+        "../resources/shaders/basic-vs.glsl",
+        "../resources/shaders/basic-fs.glsl",
+    ];
 
-    let mut meshes: Vec<Mesh> = Vec::new();
-    for m in models.iter() {
-        let mesh = &m.mesh;
-        let materials = materials.as_ref().expect("Failed to load MTL file");
-        meshes.push(Mesh::new(mesh, &materials));
-    }
+    let light_shader = Shader::new(&light_shaders)?;
 
-    let _u_object_color = CString::new("objectColor".to_string()).unwrap();
-    let _u_light_color = CString::new("lightColor".to_string()).unwrap();
-    let _u_light_pos = CString::new("lightPos".to_string()).unwrap();
-    let _u_view_pos = CString::new("viewPos".to_string()).unwrap();
+    let light_cube_mesh = LightCube::new(glm::Vec3::zeros());
+
+    let u_light_color = CString::new("lightColor".to_string()).unwrap();
+    let u_light_pos = CString::new("lightPos".to_string()).unwrap();
+    let u_view_pos = CString::new("viewPos".to_string()).unwrap();
     let model_uniform = CString::new("model".to_string()).unwrap();
     let view_uniform = CString::new("view".to_string()).unwrap();
     let projection_uniform = CString::new("projection".to_string()).unwrap();
 
-    let mut camera: Camera = Camera::new(glm::Vec3::new(0.0, 0.0, 3.0));
+    let mut camera: Camera = Camera::new(glm::Vec3::new(0.0, 0.0, 5.0));
     camera.mouse_sensitivity = 40.0;
+    camera.aspect = SCR_WIDTH as f32 / SCR_HEIGHT as f32;
 
     let mut delta_time: f32;
     let mut previous_time: f32 = 0.0;
@@ -92,29 +88,42 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         // render
         unsafe {
-            gl::ClearColor(0.5, 0.5, 0.5, 1.0);
+            gl::ClearColor(0.1, 0.1, 0.1, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
 
-        cube_shader.use_program();
-
         let projection: glm::Mat4 = glm::perspective(
-            camera.zoom.to_radians(),
-            (SCR_WIDTH / SCR_HEIGHT) as f32,
+            camera.aspect,
+            camera.fov.to_radians(),
             0.1,
             100.0,
         );
+
         let view: glm::Mat4 = camera.get_view_matrix();
-        cube_shader.set_mat4(&projection_uniform, projection);
-        cube_shader.set_mat4(&view_uniform, view);
+
+        light_shader.use_program();
+        light_shader.set_mat4(&projection_uniform, projection);
+        light_shader.set_mat4(&view_uniform, view);
+
+        let mut light_model: glm::Mat4 = glm::Mat4::identity();
+        light_model = glm::translate(&light_model, &glm::Vec3::new(1.2, 1.0, 2.0));
+        light_model = glm::scale(&light_model, &glm::Vec3::new(0.2, 0.2, 0.2));
+        light_shader.set_mat4(&model_uniform, light_model);
+        light_cube_mesh.draw(); 
+
+
+        cube_model.shader.use_program();
+        cube_model.shader.set_vec3(&u_light_color, glm::Vec3::new(1.0, 1.0, 1.0));
+        cube_model.shader.set_vec3(&u_light_pos, glm::Vec3::new(1.2, 1.0, 2.0));
+        cube_model.shader.set_vec3(&u_view_pos, camera.position);
+        cube_model.shader.set_mat4(&projection_uniform, projection);
+        cube_model.shader.set_mat4(&view_uniform, view);
 
         let model: glm::Mat4 = glm::Mat4::identity();
         glm::translate(&model, &glm::Vec3::new(0.0, 0.0, 0.0));
         glm::scale(&model, &glm::Vec3::new(1.0, 1.0, 1.0));
-        cube_shader.set_mat4(&model_uniform, model);
-        for idx in 0..meshes.len() {
-            meshes[idx].draw(&cube_shader);
-        }
+        cube_model.shader.set_mat4(&model_uniform, model);
+        cube_model.draw_meshes();
 
         // check events and swap buffers
         glfw.poll_events();

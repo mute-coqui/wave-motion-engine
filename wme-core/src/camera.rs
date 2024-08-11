@@ -99,7 +99,7 @@ impl Camera {
     }
 
     pub fn get_view_matrix(self: &Self) -> glm::Mat4 {
-        glm::look_at_rh(&self.position, &(self.position + self.front), &self.up)
+        glm::look_at(&self.position, &(self.position + self.front), &self.up)
     }
 }
 

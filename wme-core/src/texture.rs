@@ -1,17 +1,27 @@
-use std::error::Error;
+use std::{error::Error, ffi::CString};
 
 use image::ImageReader;
+use image::DynamicImage::*;
 
+#[derive(Hash, Eq, PartialEq, Debug, Clone)]
 pub struct Texture {
     pub id: u32,
     pub width: u32,
     pub height: u32,
     pub nr_channels: i32,
+    pub name: CString,
 }
 
 impl Texture {
-    pub fn new(path: &str, filter: gl::types::GLenum) -> Result<Self, Box<dyn Error>> {
+    pub fn new(path: &str, name: &str) -> Result<Self, Box<dyn Error>> {
         let image = ImageReader::open(path)?.decode()?;
+        let filter = match image.flipv() {
+            ImageLuma8(_) => gl::RED,
+            ImageLumaA8(_) => gl::RG,
+            ImageRgb8(_) => gl::RGB,
+            ImageRgba8(_) => gl::RGBA,
+            _ => 0,
+        };
 
         let mut id: u32 = 0;
 
@@ -44,11 +54,14 @@ impl Texture {
             gl::GenerateMipmap(gl::TEXTURE_2D);
         }
 
+        let name: CString = CString::new(name.to_string()).unwrap();
+
         Ok(Texture {
             id,
             width: image.width(),
             height: image.height(),
             nr_channels: 0,
+            name,
         })
     }
 }

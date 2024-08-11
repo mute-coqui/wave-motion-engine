@@ -1,17 +1,15 @@
-extern crate nalgebra_glm as glm;
+use nalgebra_glm as glm;
 
+/*
+ * packing allows for an array like layout
+ * make sure vertex shader in vars match
+ * vertex struct order.
+ * Ex: layout (location = 0) in vec3 aPos;
+ *     will correspond to Vertex.position
+ */
+#[repr(C, packed)]
 pub struct Vertex {
     pub position: glm::Vec3,
-    pub normals: glm::Vec3,
-    pub tex_coords: glm::Vec2,
-}
-
-impl Vertex {
-    pub fn new() -> Vertex {
-        Vertex {
-            position: glm::Vec3::zeros(),
-            normals: glm::Vec3::zeros(),
-            tex_coords: glm::Vec2::zeros(),
-        }
-    }
+    pub texcoord: glm::Vec2,
+    pub normal: glm::Vec3,
 }

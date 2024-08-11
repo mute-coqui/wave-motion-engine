@@ -1,7 +1,7 @@
 extern crate gl;
 extern crate nalgebra_glm as glm;
 
-pub struct Mesh {
+pub struct LightCube {
     pub position: glm::Vec3,
     pub vao: u32,
     pub light_vao: u32,
@@ -9,8 +9,8 @@ pub struct Mesh {
     vbo: u32,
 }
 
-impl Mesh {
-    pub fn new(position: glm::Vec3) -> Mesh {
+impl LightCube {
+    pub fn new(position: glm::Vec3) -> LightCube {
         let mut vao: u32 = 0;
         let mut light_vao: u32 = 0;
         let mut vbo: u32 = 0;
@@ -60,7 +60,7 @@ impl Mesh {
             gl::EnableVertexAttribArray(0);
         }
 
-        Mesh {
+       LightCube { 
             position,
             vao,
             light_vao,
@@ -68,9 +68,9 @@ impl Mesh {
         }
     }
 
-    pub fn draw(vao: u32) {
+    pub fn draw(self: &Self) {
         unsafe {
-            gl::BindVertexArray(vao);
+            gl::BindVertexArray(self.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 36);
             gl::BindVertexArray(0);
         }

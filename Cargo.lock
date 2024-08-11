@@ -224,16 +224,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a81dae078cea95a014a339291cec439d2f232ebe854a9d672b796c6afafa9b7"
 
 [[package]]
-name = "demo-3d"
-version = "0.1.0"
-dependencies = [
- "gl",
- "glfw",
- "nalgebra-glm",
- "wme-core",
-]
-
-[[package]]
 name = "demo-russimp"
 version = "0.1.0"
 dependencies = [
@@ -496,16 +486,6 @@ dependencies = [
  "arbitrary",
  "cc",
  "once_cell",
-]
-
-[[package]]
-name = "lighting"
-version = "0.1.0"
-dependencies = [
- "gl",
- "glfw",
- "nalgebra-glm",
- "wme-core",
 ]
 
 [[package]]
