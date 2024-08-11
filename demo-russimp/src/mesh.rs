@@ -1,6 +1,6 @@
 use std::ffi::c_void;
 
-use nalgebra_glm::Vec3;
+use nalgebra_glm::{Vec2, Vec3};
 
 use crate::vertex::Vertex;
 
@@ -13,11 +13,6 @@ pub struct Mesh {
 
 impl Mesh {
     pub fn new(mesh: &tobj::Mesh, _materials: &Vec<tobj::Material>) -> Mesh {
-        assert!(
-            mesh.positions.len() % 3 == 0,
-            "Mesh must be representable in 3d space"
-        );
-
         let mut vbo: u32 = 0;
         let mut vao: u32 = 0;
         let mut ebo: u32 = 0;
@@ -29,6 +24,10 @@ impl Mesh {
                     mesh.positions[3 * idx + 0],
                     mesh.positions[3 * idx + 1],
                     mesh.positions[3 * idx + 2],
+                ),
+                texcoord: Vec2::new(
+                    mesh.texcoords[2 * idx + 0],
+                    mesh.texcoords[2 * idx + 1],
                 ),
             };
             vertices.push(vertex);
@@ -61,10 +60,19 @@ impl Mesh {
                 3,
                 gl::FLOAT,
                 gl::FALSE,
-                3 * std::mem::size_of::<gl::types::GLfloat>() as gl::types::GLsizei,
+                5 * std::mem::size_of::<gl::types::GLfloat>() as gl::types::GLsizei,
                 std::ptr::null(),
             );
             gl::EnableVertexAttribArray(0);
+            gl::VertexAttribPointer(
+                1,
+                2,
+                gl::FLOAT,
+                gl::FALSE,
+                5 * std::mem::size_of::<gl::types::GLfloat>() as gl::types::GLsizei,
+                (3 * std::mem::size_of::<gl::types::GLfloat>()) as *const c_void,
+            );
+            gl::EnableVertexAttribArray(1);
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
             gl::BindVertexArray(0);
         }
