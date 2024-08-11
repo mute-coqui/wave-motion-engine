@@ -1,6 +1,7 @@
-use std::ffi::c_void;
+use std::ffi::{c_void, CString};
 
 use nalgebra_glm::{Vec2, Vec3};
+use wme_core::{shader::Shader, texture::Texture};
 
 use crate::vertex::Vertex;
 
@@ -9,10 +10,11 @@ pub struct Mesh {
     pub ebo: u32,
     pub indices: Vec<u32>,
     pub vertices: Vec<Vertex>,
+    pub textures: Vec<Texture>,
 }
 
 impl Mesh {
-    pub fn new(mesh: &tobj::Mesh, _materials: &Vec<tobj::Material>) -> Mesh {
+    pub fn new(mesh: &tobj::Mesh, materials: &Vec<tobj::Material>) -> Mesh {
         let mut vbo: u32 = 0;
         let mut vao: u32 = 0;
         let mut ebo: u32 = 0;
@@ -25,15 +27,21 @@ impl Mesh {
                     mesh.positions[3 * idx + 1],
                     mesh.positions[3 * idx + 2],
                 ),
-                texcoord: Vec2::new(
-                    mesh.texcoords[2 * idx + 0],
-                    mesh.texcoords[2 * idx + 1],
-                ),
+                texcoord: Vec2::new(mesh.texcoords[2 * idx + 0], mesh.texcoords[2 * idx + 1]),
             };
             vertices.push(vertex);
         }
 
         let indices: Vec<u32> = mesh.indices.clone();
+
+        let mut textures: Vec<Texture> = Vec::new();
+        for material in materials.iter() {
+            if let Some(texture_path) = &material.diffuse_texture {
+                textures.push(
+                    Texture::new(texture_path.as_str(), gl::RGB).expect("Failed to load texture"),
+                );
+            }
+        }
 
         unsafe {
             gl::GenVertexArrays(1, &mut vao);
@@ -81,11 +89,18 @@ impl Mesh {
             ebo,
             indices,
             vertices,
+            textures,
         }
     }
 
-    pub fn draw(self: &Self) {
+    pub fn draw(self: &Self, shader: &Shader) {
         unsafe {
+            for (idx, texture) in self.textures.iter().enumerate() {
+                gl::ActiveTexture(gl::TEXTURE0 + idx as u32);
+                let diffuse_texture = CString::new("diffuse_texture".to_string()).unwrap();
+                shader.set_int(&diffuse_texture, idx as i32);
+                gl::BindTexture(gl::TEXTURE_2D, texture.id);
+            }
             gl::BindVertexArray(self.vao);
 
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.ebo);
@@ -97,6 +112,7 @@ impl Mesh {
             );
 
             gl::BindVertexArray(0);
+            gl::ActiveTexture(gl::TEXTURE0);
         }
     }
 }

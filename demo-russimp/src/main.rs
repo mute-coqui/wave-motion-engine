@@ -113,7 +113,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         glm::scale(&model, &glm::Vec3::new(1.0, 1.0, 1.0));
         cube_shader.set_mat4(&model_uniform, model);
         for idx in 0..meshes.len() {
-            meshes[idx].draw();
+            meshes[idx].draw(&cube_shader);
         }
 
         // check events and swap buffers

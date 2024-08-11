@@ -1,6 +1,6 @@
 use nalgebra_glm as glm;
 
-/* 
+/*
  * packing allows for an array like layout
  * make sure vertex shader in vars match
  * vertex struct order.
