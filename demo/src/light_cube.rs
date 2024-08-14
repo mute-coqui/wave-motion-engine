@@ -60,7 +60,7 @@ impl LightCube {
             gl::EnableVertexAttribArray(0);
         }
 
-       LightCube { 
+        LightCube {
             position,
             vao,
             light_vao,

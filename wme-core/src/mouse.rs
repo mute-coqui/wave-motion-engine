@@ -19,7 +19,7 @@ impl Mouse {
         self: &mut Self,
         events: &glfw::GlfwReceiver<(f64, glfw::WindowEvent)>,
         camera: &mut Camera,
-        delta: f32
+        delta: f32,
     ) {
         for (_, event) in glfw::flush_messages(&events) {
             match event {

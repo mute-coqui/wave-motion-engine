@@ -4,7 +4,7 @@ pub struct Graphics {
     pub screen_width: u32,
     pub screen_height: u32,
     pub glfw: Glfw,
-    pub window: PWindow, 
+    pub window: PWindow,
     pub events: GlfwReceiver<(f64, WindowEvent)>,
     pub delta_time: f32,
     pub current_time: f32,

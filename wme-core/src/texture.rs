@@ -1,7 +1,7 @@
 use std::{error::Error, ffi::CString};
 
-use image::ImageReader;
 use image::DynamicImage::*;
+use image::ImageReader;
 
 #[derive(Hash, Eq, PartialEq, Debug, Clone)]
 pub struct Texture {

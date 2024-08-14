@@ -11,6 +11,7 @@ impl Shader {
         let vertex_shader = Self::create_shader(shaders[0], gl::VERTEX_SHADER)?;
         let fragment_shader = Self::create_shader(shaders[1], gl::FRAGMENT_SHADER)?;
         let id = Self::create_program(vertex_shader, fragment_shader);
+
         Ok(Shader { id })
     }
 

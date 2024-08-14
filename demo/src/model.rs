@@ -41,7 +41,7 @@ impl Model {
                         mesh.normals[3 * idx + 0],
                         mesh.normals[3 * idx + 1],
                         mesh.normals[3 * idx + 2],
-                    )
+                    ),
                 };
                 vertices.push(vertex);
             }

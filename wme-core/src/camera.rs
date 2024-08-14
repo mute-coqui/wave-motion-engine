@@ -17,10 +17,11 @@ pub struct Camera {
     pub yaw: f32,
     pub movement_speed: f32,
     pub mouse_sensitivity: f32,
-    pub zoom: f32,
     pub invert_y: bool,
     pub fov: f32,
     pub aspect: f32,
+    pub near: f32,
+    pub far: f32,
 }
 
 impl Camera {
@@ -39,10 +40,11 @@ impl Camera {
             yaw: camera.yaw,
             movement_speed: camera.movement_speed,
             mouse_sensitivity: camera.movement_speed,
-            zoom: camera.zoom,
             invert_y: camera.invert_y,
             fov: camera.fov,
             aspect: camera.aspect,
+            near: camera.near,
+            far: camera.far,
         }
     }
 
@@ -101,6 +103,10 @@ impl Camera {
     pub fn get_view_matrix(self: &Self) -> glm::Mat4 {
         glm::look_at(&self.position, &(self.position + self.front), &self.up)
     }
+
+    pub fn get_projection_matrix(self: &Self) -> glm::Mat4 {
+        glm::perspective(self.aspect, self.fov.to_radians(), self.near, self.far)
+    }
 }
 
 fn recalculate_vectors(camera: &mut Camera) {
@@ -125,10 +131,11 @@ impl Default for Camera {
             yaw: -90.0,
             movement_speed: 2.5,
             mouse_sensitivity: 0.1,
-            zoom: 45.0,
             invert_y: true,
             fov: 45.0,
             aspect: (800 / 600) as f32,
+            near: 0.1,
+            far: 100.0,
         }
     }
 }
